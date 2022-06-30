@@ -1,34 +1,33 @@
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 public class Main {
-    public static void main(String[] args) {
-        List<Future<Integer>> task = new ArrayList();
-        MyThread myThread = new MyThread();
-        ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-
-//        ThreadGroup threadGroup = new ThreadGroup("myThread");
-//        final FutureTask <Integer> futureTask = new FutureTask<>(myThread);
+    public static void main(String[] args) throws InterruptedException {
+        List<Callable<String>> task = new ArrayList();
+        ExecutorService threadPool = Executors.newFixedThreadPool(4);
         for (int i = 1; i < 5; i++) {
-            task.add(myThread);
+            task.add(new MyThread(i));
         }
-        List<Future<MyThread>> ere = threadPool.submit(task);
-//            Thread thread = new Thread(threadGroup, futureTask);
-//
-//            thread.setName(String.valueOf(i));
-//            thread.start();
-//        }
 
+        // запуск для выполнения всех задач
+        threadPool.invokeAll(task).stream().map(future-> {try {
+            return future.get();
+        }catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+        }).forEach(System.out::println);
+        System.out.println();
+
+        // запуск для выполнения самой быстрой задачи
         try {
-            Thread.sleep(15000);
-        } catch (InterruptedException e) {
+            String rezult = threadPool.invokeAny(task);
+            System.out.println(rezult);
+        } catch (ExecutionException e) {
             e.printStackTrace();
         }
 
-
+        // закрытие пула потоков
+        threadPool.shutdown();
     }
 }

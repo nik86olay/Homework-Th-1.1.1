@@ -1,21 +1,27 @@
 import java.util.concurrent.Callable;
+import static java.lang.Thread.*;
 
-public class MyThread implements Callable<Integer> {
-    int i = 0;
+public class MyThread implements Callable<String> {
+    private final int i;
+    private int j;
+
+    public MyThread(int i){
+        this.i=i;
+    }
 
     @Override
-    public Integer call() {
+    public String call() {
         try {
-            while (!Thread.currentThread().isInterrupted()) {
-                System.out.println("Я поток " + Thread.currentThread().getName() + ". Всем привет!");
-                i++;
-                Thread.sleep(3000);
+            while (j!=i) {
+                System.out.println("Я поток " + currentThread().getName() + ". Всем привет!");
+                j++;
+                sleep(300);
             }
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
-            System.out.printf("Поток %s завершен\n", Thread.currentThread().getName());
+            System.out.printf("Поток %s завершен\n", currentThread().getName());
         }
-        return i;
+        return "количество выведенных потоком "+ currentThread().getName() +" сообщений в консоль - " +j;
     }
 }
